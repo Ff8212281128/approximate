@@ -227,42 +227,53 @@
 
     <div class="mountain-scene" id="mountain-scene">
       <svg class="scene-svg" id="scene-svg" viewBox="0 0 900 340" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#0d47a1"/>
-            <stop offset="60%" stop-color="#42a5f5"/>
-            <stop offset="100%" stop-color="#b3e5fc"/>
-          </linearGradient>
-          <linearGradient id="mtnFront" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#4dd0e1"/>
-            <stop offset="55%" stop-color="#00838f"/>
-            <stop offset="100%" stop-color="#004d40"/>
-          </linearGradient>
-          <linearGradient id="mtnBack" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#7986cb"/>
-            <stop offset="100%" stop-color="#283593"/>
-          </linearGradient>
-        </defs>
-        <rect width="900" height="340" fill="url(#sky)"/>
+      <svg class="scene-svg" id="scene-svg" viewBox="0 0 900 340" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d47a1"/>
+      <stop offset="60%" stop-color="#42a5f5"/>
+      <stop offset="100%" stop-color="#b3e5fc"/>
+    </linearGradient>
+    <linearGradient id="mtnFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4dd0e1"/>
+      <stop offset="55%" stop-color="#00838f"/>
+      <stop offset="100%" stop-color="#004d40"/>
+    </linearGradient>
+    <linearGradient id="mtnBack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7986cb"/>
+      <stop offset="100%" stop-color="#283593"/>
+    </linearGradient>
+  </defs>
 
-        <circle cx="780" cy="55" r="26" fill="#e0f7fa" opacity="0.95"/>
-        <circle cx="772" cy="50" r="22" fill="#0d47a1" opacity="0.9"/>
-        <g fill="#e0f7fa" opacity="0.9">
-          <circle cx="90" cy="40" r="2"/><circle cx="180" cy="70" r="1.6"/>
-          <circle cx="280" cy="35" r="2"/><circle cx="480" cy="50" r="1.8"/>
-          <circle cx="620" cy="30" r="2"/><circle cx="700" cy="90" r="1.5"/>
-          <circle cx="350" cy="95" r="1.6"/>
-        </g>
+  <!-- ۱) آسمان -->
+  <rect width="900" height="300" fill="url(#sky)"/>
 
-        <polygon points="0,300 100,140 200,300" fill="url(#mtnBack)" opacity="0.55"/>
-        <polygon points="700,300 810,120 900,300" fill="url(#mtnBack)" opacity="0.55"/>
+  <!-- ماه و ستاره‌ها -->
+  <circle cx="780" cy="55" r="26" fill="#e0f7fa" opacity="0.95"/>
+  <circle cx="772" cy="50" r="22" fill="#0d47a1" opacity="0.9"/>
+  <g fill="#e0f7fa" opacity="0.9">
+    <circle cx="90" cy="40" r="2"/><circle cx="180" cy="70" r="1.6"/>
+    <circle cx="280" cy="35" r="2"/><circle cx="480" cy="50" r="1.8"/>
+    <circle cx="620" cy="30" r="2"/><circle cx="700" cy="90" r="1.5"/>
+    <circle cx="350" cy="95" r="1.6"/>
+  </g>
 
-        <g id="mountains-group"></g>
+  <!-- کوه‌های پس‌زمینه تزئینی -->
+  <polygon points="0,300 100,140 200,300" fill="url(#mtnBack)" opacity="0.55"/>
+  <polygon points="700,300 810,120 900,300" fill="url(#mtnBack)" opacity="0.55"/>
 
-        <rect x="0" y="300" width="900" height="40" fill="#004d40"/>
-        <line x1="0" y1="300" x2="900" y2="300" stroke="#4dd0e1" stroke-width="2.5"/>
-      </svg>
+  <!-- ۲) ناحیه زمین سبز (قبل از اعداد، تا رویشان را نپوشاند) -->
+  <rect x="0" y="300" width="900" height="40" fill="#004d40"/>
 
+  <!-- ۳) کوه‌ها و خانه‌ها (با JS پر می‌شود) -->
+  <g id="mountains-group"></g>
+
+  <!-- ۴) خط زمین -->
+  <line x1="0" y1="300" x2="900" y2="300" stroke="#4dd0e1" stroke-width="2.5"/>
+
+  <!-- ۵) اعداد زیر ایستگاه‌ها — بالاخره بیرون از گروه و بالای زمین -->
+  <g id="numbers-group" style="font-family: Tahoma, Arial, sans-serif;"></g>
+</svg>
       <div id="vguide" class="vguide"></div>
       <div id="person" class="person">🧗</div>
       <div id="bubble" class="speech-bubble"></div>
@@ -401,9 +412,13 @@ function yOfValue(v){
 /* ============ رسم کوه‌ها و ایستگاه‌ها ============ */
 (function buildMountains(){
   const g = document.getElementById('mountains-group');
-  if(!g) return;
-  let svg = '';
+  const ng = document.getElementById('numbers-group');
+  if(!g || !ng) return;
 
+  let svg = '';
+  let nums = '';
+
+  // کوه‌ها
   for(let n = N_MIN; n < N_MAX; n++){
     const xL = xOfInteger(n);
     const xR = xOfInteger(n + 1);
@@ -417,7 +432,7 @@ function yOfValue(v){
               fill="#e0f7fa" opacity="0.95"/>`;
   }
 
-  // ایستگاه‌ها (خانه) + عدد زیر ایستگاه با علامت منفی درست
+  // خانه‌ها + اعداد زیرشان
   for(let n = N_MIN; n <= N_MAX; n++){
     const x = xOfInteger(n);
     const y = BASE_Y;
@@ -430,20 +445,18 @@ function yOfValue(v){
       <rect x="${x-7}" y="${y-30}" width="14" height="26" fill="#1a237e" rx="2"/>
     </g>`;
 
-    // عدد زیر ایستگاه — با LTR برای اینکه منفی سمت چپ باشد
-    svg += `<g transform="translate(${x}, ${y + 26})">
-      <text x="0" y="0"
-            font-size="20" font-weight="bold"
-            text-anchor="middle"
-            fill="#e0f7fa"
-            stroke="#004d40" stroke-width="0.8"
-            paint-order="stroke"
-            style="direction: ltr; unicode-bidi: isolate;"
-            font-family="Tahoma, Arial, sans-serif">${'\u200E' + n}</text>
-    </g>`;
+    // عدد زیر ایستگاه — با LRM برای منفی سمت چپ، رنگ زرد برای وضوح
+    nums += `<text x="${x}" y="${BASE_Y + 28}"
+              font-size="22" font-weight="bold"
+              text-anchor="middle"
+              fill="#ffeb3b"
+              stroke="#000" stroke-width="0.6"
+              paint-order="stroke"
+              style="direction: ltr; unicode-bidi: isolate;">${'\u200E' + n}</text>`;
   }
 
   g.innerHTML = svg;
+  ng.innerHTML = nums;
 })();
 /* ============ دکمه‌های اعداد ============ */
 const numbers = [
