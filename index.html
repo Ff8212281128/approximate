@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>ماجراجویی تقریب اعداد</title>
+<style>
+  * { box-sizing: border-box; font-family: 'Tahoma', sans-serif; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 20%, #0277bd 55%, #00acc1 80%, #4dd0e1 100%);
+    background-attachment: fixed;
+    padding: 20px;
+    color: #e8eaf6;
+  }
+  .page { display: none; max-width: 980px; margin: 0 auto; }
+  .page.active { display: block; animation: fadeIn 0.5s ease; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+
+  h1 {
+    text-align: center; font-size: 2.2rem; color: #e0f7fa;
+    text-shadow: 3px 3px 0 #006064, 6px 6px 15px rgba(0,0,0,0.5);
+    margin: 20px 0;
+  }
+  h2 { color: #4dd0e1; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
+
+  .card {
+    background: linear-gradient(145deg, rgba(26,35,126,0.85), rgba(2,119,189,0.75));
+    border-radius: 25px; padding: 25px; margin: 20px 0;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.15);
+    border: 2px solid rgba(77,208,225,0.5);
+  }
+
+  .big-buttons { display: flex; gap: 25px; justify-content: center; flex-wrap: wrap; margin: 40px 0; }
+  .big-btn {
+    font-size: 1.6rem; padding: 30px 45px; border-radius: 30px; border: none;
+    cursor: pointer; color: white; font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.4), 0 12px 25px rgba(0,0,0,0.35);
+  }
+  .big-btn:hover { transform: translateY(-5px) scale(1.05); }
+  .big-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.4); }
+  .btn-round { background: linear-gradient(135deg, #00bcd4, #0288d1); }
+  .btn-cut   { background: linear-gradient(135deg, #3f51b5, #1a237e); }
+
+  .back-btn {
+    background: linear-gradient(135deg, #00acc1, #00695c); color:white; border:none;
+    padding:12px 25px; border-radius:20px; cursor:pointer; font-size:1rem;
+    box-shadow: 0 5px 0 #003d33; margin-bottom: 10px;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #003d33; }
+
+  .typewriter {
+    font-size: 1.15rem; line-height: 2; min-height: 120px; padding: 10px 15px;
+    background: rgba(13,71,161,0.55); border-right: 3px solid #4dd0e1;
+    border-radius: 15px; white-space: pre-wrap; color: #e0f7fa;
+  }
+
+  .example-box {
+    background: linear-gradient(135deg, rgba(0,172,193,0.35), rgba(0,131,143,0.4));
+    padding: 20px; border-radius: 20px; font-size: 1.2rem;
+    border: 3px dashed #4dd0e1; text-align: center; line-height: 2; color: #e0f7fa;
+  }
+
+  .quiz-q { font-size: 1.2rem; margin-bottom: 15px; font-weight: bold; color:#b2ebf2; }
+  .options { display: flex; gap: 15px; flex-wrap: wrap; }
+  .opt-btn {
+    padding: 15px 30px; font-size: 1.2rem; border-radius: 15px;
+    border: 3px solid #4dd0e1; background: rgba(13,71,161,0.7); color: #e0f7fa;
+    cursor: pointer; font-weight: bold; transition: all 0.2s;
+    box-shadow: 0 5px 0 #01579b;
+  }
+  .opt-btn:hover:not(:disabled) { background: #00acc1; }
+  .opt-btn.correct { background: linear-gradient(135deg,#00e676,#00c853); color:white; border-color:#00e676; box-shadow:0 5px 0 #00875a; }
+  .opt-btn.wrong   { background: linear-gradient(135deg,#ef5350,#c62828); color:white; border-color:#ef5350; box-shadow:0 5px 0 #8e0000; }
+
+  .feedback { margin-top: 15px; font-size: 1.1rem; padding: 15px; border-radius: 15px; display: none; }
+  .feedback.show { display: block; animation: fadeIn 0.4s; }
+  .feedback.good { background: rgba(0,200,83,0.25); color:#c8e6c9; border: 2px solid #00e676; }
+  .feedback.bad  { background: rgba(198,40,40,0.3); color:#ffcdd2; border: 2px solid #ef5350; }
+
+  .sticker-overlay {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0);
+    font-size: 8rem; z-index: 1000; pointer-events: none;
+    transition: transform 0.5s cubic-bezier(0.68,-0.55,0.27,1.55);
+    filter: drop-shadow(0 0 20px rgba(77,208,225,0.9));
+  }
+  .sticker-overlay.show { transform: translate(-50%,-50%) scale(1); }
+
+  .mountain-scene {
+    position: relative;
+    background: linear-gradient(to bottom, #0d47a1 0%, #1565c0 30%, #42a5f5 70%, #b3e5fc 100%);
+    border-radius: 20px; overflow: hidden; margin: 20px 0;
+    border: 3px solid #4dd0e1; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    aspect-ratio: 900 / 340;
+  }
+  .scene-svg { display: block; width: 100%; height: 100%; }
+
+  .person {
+    position: absolute; font-size: 1.8rem; line-height: 1;
+    transform: translate(-50%, -100%);
+    transition: left 1.2s cubic-bezier(0.68,-0.55,0.27,1.55),
+                top  1.2s cubic-bezier(0.68,-0.55,0.27,1.55);
+    z-index: 20; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.6));
+  }
+  .vguide {
+    position: absolute; width: 2px;
+    background: linear-gradient(to bottom, #ffeb3b, rgba(255,235,59,0.1));
+    transform: translateX(-50%);
+    transition: left 1.2s cubic-bezier(0.68,-0.55,0.27,1.55),
+                top  1.2s cubic-bezier(0.68,-0.55,0.27,1.55),
+                height 1.2s cubic-bezier(0.68,-0.55,0.27,1.55);
+    z-index: 15; pointer-events: none; opacity: 0.85;
+  }
+  .speech-bubble {
+    position: absolute; background: #e0f7fa; border: 3px solid #00acc1;
+    padding: 8px 14px; border-radius: 15px; font-size: 0.9rem;
+    font-weight: bold; color: #006064; transform: translate(-50%, -100%);
+    opacity: 0; transition: opacity 0.4s,
+                left 1.2s cubic-bezier(0.68,-0.55,0.27,1.55),
+                top  1.2s cubic-bezier(0.68,-0.55,0.27,1.55);
+    z-index: 30; max-width: 260px; text-align: center; line-height: 1.5;
+    margin-top: -55px;
+  }
+  .speech-bubble.show { opacity: 1; }
+
+  .num-buttons {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 20px;
+  }
+  .num-btn {
+    padding: 12px 18px; font-size: 1.05rem; font-weight: bold;
+    border: none; border-radius: 16px; cursor: pointer; color: white;
+    transition: all 0.2s; box-shadow: 0 5px 0 rgba(0,0,0,0.35);
+    background: linear-gradient(135deg, #26c6da, #00838f);
+  }
+  .num-btn:hover { transform: translateY(-3px) scale(1.06); }
+  .num-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+  .num-btn.neg { background: linear-gradient(135deg, #5c6bc0, #283593); }
+  .num-btn.half { outline: 3px solid #ffeb3b; outline-offset: 2px; }
+
+  .legend {
+    display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;
+    font-size: 0.95rem; color: #e0f7fa; margin-top: 12px;
+  }
+  .legend span { background: rgba(13,71,161,0.6); padding: 8px 15px; border-radius: 12px; border:1px solid #4dd0e1; }
+</style>
+</head>
+<body>
+
+<!-- ================== صفحه اصلی ================== -->
+<div id="page-home" class="page active">
+  <h1>🏔️ ماجراجویی تقریب اعداد 🌊</h1>
+  <div class="card" style="text-align:center;">
+    <h2>📚 انواع تقریب زدن اعداد</h2>
+    <p style="font-size:1.15rem; line-height:2; color:#e0f7fa;">
+      وقتی یک عدد اعشاری داریم، گاهی نمی‌خواهیم همه‌ی رقم‌هایش را نگه داریم و آن را
+      به یک عدد ساده‌تر نزدیک می‌کنیم. به این کار <b>تقریب زدن</b> می‌گویند.
+      دو روش مهم داریم: <b>گرد کردن</b> و <b>قطع کردن</b>.
+      یکی از دکمه‌ها را انتخاب کن تا ماجراجویی شروع شود! 🚀
+    </p>
+    <div class="big-buttons">
+      <button class="big-btn btn-round" onclick="go('page-round')">🔄 گرد کردن</button>
+      <button class="big-btn btn-cut" onclick="go('page-cut')">✂️ قطع کردن</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================== صفحه قطع کردن ================== -->
+<div id="page-cut" class="page">
+  <button class="back-btn" onclick="go('page-home')">⬅️ بازگشت</button>
+  <h1>✂️ تقریب به روش قطع کردن</h1>
+
+  <div class="card">
+    <h2>📖 راهنما</h2>
+    <div id="cut-typewriter" class="typewriter"></div>
+  </div>
+
+  <div class="card">
+    <h2>🌟 مثال</h2>
+    <div class="example-box">
+      عدد <b>۳٫۷۸</b> را به روش قطع کردن تا یک رقم اعشار تقریب بزن:<br>
+      🧐 ارقام بعد از رقم اعشار اول را <b>حذف می‌کنیم</b> (بدون هیچ تغییری).<br>
+      ✅ جواب: <b>۳٫۷</b>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>✏️ تمرین تعاملی</h2>
+    <div class="quiz-q">۱) عدد ۵٫۹۲ را به روش قطع کردن تا یک رقم اعشار تقریب بزن:</div>
+    <div class="options">
+      <button class="opt-btn" onclick="answer(this, true, 'q1')">۵٫۹</button>
+      <button class="opt-btn" onclick="answer(this, false, 'q1')">۶٫۰</button>
+      <button class="opt-btn" onclick="answer(this, false, 'q1')">۵٫۲</button>
+    </div>
+    <div id="q1-feedback" class="feedback"></div>
+
+    <hr style="margin:25px 0; border-color:rgba(77,208,225,0.3);">
+
+    <div class="quiz-q">۲) عدد ۱۲٫۳۴۵ را به روش قطع کردن تا دو رقم اعشار تقریب بزن:</div>
+    <div class="options">
+      <button class="opt-btn" onclick="answer(this, true, 'q2')">۱۲٫۳۴</button>
+      <button class="opt-btn" onclick="answer(this, false, 'q2')">۱۲٫۳۵</button>
+      <button class="opt-btn" onclick="answer(this, false, 'q2')">۱۲٫۳</button>
+    </div>
+    <div id="q2-feedback" class="feedback"></div>
+  </div>
+</div>
+
+<!-- ================== صفحه گرد کردن ================== -->
+<div id="page-round" class="page">
+  <button class="back-btn" onclick="go('page-home')">⬅️ بازگشت</button>
+  <h1>🔄 تقریب به روش گرد کردن</h1>
+
+  <div class="card">
+    <h2>📖 راهنما</h2>
+    <div id="round-typewriter" class="typewriter"></div>
+  </div>
+
+  <div class="card">
+    <h2>🏔️ ماجراجویی روی کوه</h2>
+    <p style="font-size:1.05rem; color:#e0f7fa;">
+      هر <b>ایستگاه (خانه)</b> روی یک عدد صحیح است. آدمک روی دامنه‌ی کوه حرکت می‌کند
+      و هرچه به قله نزدیک‌تر، بالاتر می‌ایستد. اگر آدمک <b>دقیقاً روی قله</b> باشد
+      (یعنی نیم‌صحیح مثل ۰٫۵)، فرقی نمی‌کند به ایستگاه قبل یا بعد برود، پس تصمیم می‌گیرد
+      <b>یک قدم جلوتر</b> برود! 🚶‍♂️
+    </p>
+
+    <div class="mountain-scene" id="mountain-scene">
+      <svg class="scene-svg" id="scene-svg" viewBox="0 0 900 340" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0d47a1"/>
+            <stop offset="60%" stop-color="#42a5f5"/>
+            <stop offset="100%" stop-color="#b3e5fc"/>
+          </linearGradient>
+          <linearGradient id="mtnFront" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4dd0e1"/>
+            <stop offset="55%" stop-color="#00838f"/>
+            <stop offset="100%" stop-color="#004d40"/>
+          </linearGradient>
+          <linearGradient id="mtnBack" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#7986cb"/>
+            <stop offset="100%" stop-color="#283593"/>
+          </linearGradient>
+        </defs>
+        <rect width="900" height="340" fill="url(#sky)"/>
+
+        <circle cx="780" cy="55" r="26" fill="#e0f7fa" opacity="0.95"/>
+        <circle cx="772" cy="50" r="22" fill="#0d47a1" opacity="0.9"/>
+        <g fill="#e0f7fa" opacity="0.9">
+          <circle cx="90" cy="40" r="2"/><circle cx="180" cy="70" r="1.6"/>
+          <circle cx="280" cy="35" r="2"/><circle cx="480" cy="50" r="1.8"/>
+          <circle cx="620" cy="30" r="2"/><circle cx="700" cy="90" r="1.5"/>
+          <circle cx="350" cy="95" r="1.6"/>
+        </g>
+
+        <polygon points="0,300 100,140 200,300" fill="url(#mtnBack)" opacity="0.55"/>
+        <polygon points="700,300 810,120 900,300" fill="url(#mtnBack)" opacity="0.55"/>
+
+        <g id="mountains-group"></g>
+
+        <rect x="0" y="300" width="900" height="40" fill="#004d40"/>
+        <line x1="0" y1="300" x2="900" y2="300" stroke="#4dd0e1" stroke-width="2.5"/>
+      </svg>
+
+      <div id="vguide" class="vguide"></div>
+      <div id="person" class="person">🧗</div>
+      <div id="bubble" class="speech-bubble"></div>
+    </div>
+
+    <div class="legend">
+      <span>🏠 ایستگاه = عدد صحیح</span>
+      <span>⛰️ قله = وسط دو عدد صحیح (نیم‌صحیح)</span>
+      <span>🧗 ارتفاع آدمک = مقدار دقیق عدد</span>
+    </div>
+
+    <h3 style="text-align:center; margin-top:25px; color:#4dd0e1;">یک عدد را انتخاب کن تا آدمک دقیقاً روی محلش بایستد:</h3>
+    <div class="num-buttons" id="num-buttons"></div>
+  </div>
+
+  <div class="card">
+    <h2>✏️ تمرین تعاملی</h2>
+    <div class="quiz-q">۱) عدد <b>-۰٫۵</b> را با گرد کردن به نزدیک‌ترین عدد صحیح تقریب بزن:</div>
+    <div class="options">
+      <button class="opt-btn" onclick="answer(this, false, 'r1')">-۱</button>
+      <button class="opt-btn" onclick="answer(this, true, 'r1')">۰</button>
+      <button class="opt-btn" onclick="answer(this, false, 'r1')">۱</button>
+    </div>
+    <div id="r1-feedback" class="feedback"></div>
+
+    <hr style="margin:25px 0; border-color:rgba(77,208,225,0.3);">
+
+    <div class="quiz-q">۲) عدد <b>۲٫۵</b> را با گرد کردن به نزدیک‌ترین عدد صحیح تقریب بزن:</div>
+    <div class="options">
+      <button class="opt-btn" onclick="answer(this, false, 'r2')">۲</button>
+      <button class="opt-btn" onclick="answer(this, true, 'r2')">۳</button>
+      <button class="opt-btn" onclick="answer(this, false, 'r2')">۲٫۰</button>
+    </div>
+    <div id="r2-feedback" class="feedback"></div>
+  </div>
+</div>
+
+<div id="sticker" class="sticker-overlay">🎉</div>
+
+<script>
+/* ============ ناوبری ============ */
+function go(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(id);
+  if(target) target.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  if(id === 'page-cut'){
+    startTypewriter('cut-typewriter',
+      'در روش قطع کردن، به تعداد رقم‌هایی که می‌خواهیم نگه داریم، از سمت چپ رقم می‌شماریم و بقیه ارقام را کاملاً حذف می‌کنیم. مهم نیست رقم بعدی چند است، هیچ تغییری در ارقام باقی‌مانده نمی‌دهیم. مثلاً ۴٫۶۸ را اگر تا یک رقم اعشار قطع کنیم، می‌شود ۴٫۶. ✂️');
+  }
+  if(id === 'page-round'){
+    startTypewriter('round-typewriter',
+      'در روش گرد کردن به عددی که به آن نزدیک‌تریم می‌رویم. روی محور اعداد، اگر عددمان به عدد صحیح سمت راست نزدیک‌تر باشد به آن گرد می‌شود و اگر به سمت چپ نزدیک‌تر باشد به سمت چپ. اگر دقیقاً وسط دو عدد صحیح باشیم (مثل ۲٫۵ یا -۰٫۵)، طبق قاعده‌ی کتاب‌های درسی ایران به عدد بزرگ‌تر (یعنی سمت راست روی محور) گرد می‌کنیم. 🏔️');
+  }
+}
+
+/* ============ انیمیشن تایپی ============ */
+const twTimers = {};
+function startTypewriter(elId, text){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  el.textContent = '';
+  if(twTimers[elId]) clearInterval(twTimers[elId]);
+  let i = 0;
+  twTimers[elId] = setInterval(() => {
+    el.textContent += text[i];
+    i++;
+    if(i >= text.length) clearInterval(twTimers[elId]);
+  }, 30);
+}
+
+/* ============ تست‌ها ============ */
+const explanations = {
+  q1: 'در قطع کردن هیچ رقمی را تغییر نمی‌دهیم، فقط ارقام بعدی را حذف می‌کنیم. پس ۵٫۹۲ می‌شود ۵٫۹.',
+  q2: 'دو رقم اعشار اول را نگه می‌داریم (۳۴) و بقیه را حذف می‌کنیم: ۱۲٫۳۴.',
+  r1: 'عدد -۰٫۵ دقیقاً وسط -۱ و ۰ است. طبق قاعده‌ی «به عدد بزرگ‌تر گرد کن» به سمت ۰ می‌رویم. پس جواب ۰ است.',
+  r2: 'عدد ۲٫۵ دقیقاً وسط ۲ و ۳ است. طبق قاعده به عدد بزرگ‌تر یعنی ۳ گرد می‌شود.'
+};
+
+function answer(btn, isCorrect, qid){
+  const parent = btn.parentElement;
+  parent.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
+  const fb = document.getElementById(qid + '-feedback');
+  fb.classList.add('show');
+  if(isCorrect){
+    btn.classList.add('correct');
+    fb.classList.add('good');
+    fb.innerHTML = '🎉 آفرین! کاملاً درست بود. ' + explanations[qid];
+    showSticker(['🎉','🌟','👏','🥳','🏆','💎']);
+  } else {
+    btn.classList.add('wrong');
+    parent.querySelectorAll('.opt-btn').forEach(b => {
+      if(b.getAttribute('onclick').includes(', true,')) b.classList.add('correct');
+    });
+    fb.classList.add('bad');
+    fb.innerHTML = '❌ اشکال داشت! ' + explanations[qid];
+  }
+}
+
+function showSticker(list){
+  const st = document.getElementById('sticker');
+  st.textContent = list[Math.floor(Math.random() * list.length)];
+  st.classList.add('show');
+  setTimeout(() => st.classList.remove('show'), 1800);
+}
+
+/* ============================================================
+   هندسه کوه
+   ============================================================ */
+const VB_W = 900, VB_H = 340;
+const BASE_Y = 300;
+const PEAK_H = 200;
+const X_LEFT = 40, X_RIGHT = 860;
+const N_MIN = -3, N_MAX = 3;
+const SPACING = (X_RIGHT - X_LEFT) / (N_MAX - N_MIN);
+
+function xOfInteger(n){ return X_LEFT + (n - N_MIN) * SPACING; }
+function xOfValue(v){ return X_LEFT + (v - N_MIN) * SPACING; }
+
+function yOfValue(v){
+  const nFloor = Math.floor(v);
+  const xL = xOfInteger(nFloor);
+  const xR = xOfInteger(nFloor + 1);
+  const xPeak = (xL + xR) / 2;
+  const yPeak = BASE_Y - PEAK_H;
+  const xV = xOfValue(v);
+  if(xV <= xPeak){
+    const t = (xV - xL) / (xPeak - xL);
+    return BASE_Y + (yPeak - BASE_Y) * t;
+  } else {
+    const t = (xV - xPeak) / (xR - xPeak);
+    return yPeak + (BASE_Y - yPeak) * t;
+  }
+}
+
+/* ============ رسم کوه‌ها و ایستگاه‌ها ============ */
+(function buildMountains(){
+  const g = document.getElementById('mountains-group');
+  if(!g) return;
+  let svg = '';
+
+  for(let n = N_MIN; n < N_MAX; n++){
+    const xL = xOfInteger(n);
+    const xR = xOfInteger(n + 1);
+    const xPeak = (xL + xR) / 2;
+    const yPeak = BASE_Y - PEAK_H;
+
+    svg += `<polygon points="${xL},${BASE_Y} ${xPeak},${yPeak} ${xR},${BASE_Y}"
+              fill="url(#mtnFront)" stroke="#004d40" stroke-width="2"/>`;
+
+    svg += `<polygon points="${xPeak-22},${yPeak+40} ${xPeak-11},${yPeak+18} ${xPeak},${yPeak+5} ${xPeak+11},${yPeak+18} ${xPeak+22},${yPeak+40} ${xPeak+14},${yPeak+34} ${xPeak},${yPeak+38} ${xPeak-14},${yPeak+34}"
+              fill="#e0f7fa" opacity="0.95"/>`;
+  }
+
+  for(let n = N_MIN; n <= N_MAX; n++){
+    const x = xOfInteger(n);
+    const y = BASE_Y;
+    svg += `<g>
+      <rect x="${x-24}" y="${y-46}" width="48" height="42" fill="#b3e5fc" stroke="#006064" stroke-width="2.5" rx="4"/>
+      <polygon points="${x-32},${y-46} ${x},${y-76} ${x+32},${y-46}"
+               fill="#00acc1" stroke="#004d40" stroke-width="2.5" stroke-linejoin="round"/>
+      <rect x="${x-7}" y="${y-30}" width="14" height="26" fill="#1a237e" rx="2"/>
+      <text x="${x}" y="${y+18}" font-size="17" font-weight="bold"
+            text-anchor="middle" fill="#e0f7fa">${n}</text>
+    </g>`;
+  }
+
+  g.innerHTML = svg;
+})();
+
+/* ============ دکمه‌های اعداد ============ */
+const numbers = [
+  {v:-2.5, label:'-۲٫۵'},
+  {v:-1.7, label:'-۱٫۷'},
+  {v:-1.5, label:'-۱٫۵'},
+  {v:-0.5, label:'-۰٫۵'},
+  {v:-0.3, label:'-۰٫۳'},
+  {v:0,    label:'۰'},
+  {v:0.3,  label:'۰٫۳'},
+  {v:0.5,  label:'۰٫۵'},
+  {v:0.7,  label:'۰٫۷'},
+  {v:1.2,  label:'۱٫۲'},
+  {v:1.5,  label:'۱٫۵'},
+  {v:2.5,  label:'۲٫۵'},
+  {v:2.8,  label:'۲٫۸'}
+];
+
+(function buildNumButtons(){
+  const container = document.getElementById('num-buttons');
+  if(!container) return;
+  numbers.forEach(n => {
+    const b = document.createElement('button');
+    const isHalf = Math.abs(n.v - Math.round(n.v)) === 0.5;
+    b.className = 'num-btn' + (n.v < 0 ? ' neg' : '') + (isHalf ? ' half' : '');
+    b.textContent = n.label;
+    b.onclick = () => movePerson(n.v);
+    container.appendChild(b);
+  });
+})();
+
+/* ============ حرکت آدمک ============ */
+const person = document.getElementById('person');
+const bubble = document.getElementById('bubble');
+const vguide = document.getElementById('vguide');
+
+function movePerson(value){
+  const xVB = xOfValue(value);
+  const yVB = yOfValue(value);
+
+  const xPct = (xVB / VB_W) * 100;
+  const yPct = (yVB / VB_H) * 100;
+
+  // مرحله ۱: آدمک روی نقطه دقیق عدد می‌ایستد
+  person.style.left = xPct + '%';
+  person.style.top  = yPct + '%';
+
+  vguide.style.left   = xPct + '%';
+  vguide.style.top    = yPct + '%';
+  vguide.style.height = ((BASE_Y - yVB) / VB_H * 100) + '%';
+  vguide.style.opacity = '0.85';
+
+  bubble.style.left = xPct + '%';
+  bubble.style.top  = yPct + '%';
+
+  const isHalf = Math.abs(value - Math.round(value)) === 0.5;
+
+  if(isHalf){
+    // ====== حالت نیم‌صحیح: روی قله → یک قدم جلو به ایستگاه بعدی ======
+    const upper = Math.ceil(value);
+    const lower = Math.floor(value);
+    bubble.textContent = `روی قله‌ام! ⛰️ فرقی ندارد به ${lower} یا ${upper} بروم، پس یک قدم جلو می‌روم و به ${upper} می‌رسم.`;
+    bubble.classList.add('show');
+
+    setTimeout(() => {
+      const tx = xOfInteger(upper);
+      const ty = BASE_Y - 5;   // کمی بالاتر از خط زمین، پشت خانه
+      const tXpct = (tx / VB_W) * 100;
+      const tYpct = (ty / VB_H) * 100;
+      person.style.left = tXpct + '%';
+      person.style.top  = tYpct + '%';
+      vguide.style.height = '0%';
+      vguide.style.opacity = '0';
+      bubble.style.left = tXpct + '%';
+      bubble.style.top  = tYpct + '%';
+      bubble.textContent = `رسیدم به ایستگاه ${upper}! 🏠`;
+    }, 1600);
+
+    setTimeout(() => bubble.classList.remove('show'), 4500);
+  } else {
+    // ====== حالت عادی: روی دامنه → به نزدیک‌ترین ایستگاه برو ======
+    const nearest = Math.round(value);
+    const dir = value > nearest ? 'چپ' : 'راست';
+    // اگر مقدار دقیقاً عدد صحیح باشد، همان‌جا بمان
+    if(value === nearest){
+      bubble.textContent = `اینجا خودش یک ایستگاه است! 🏠 عدد ${nearest}`;
+      bubble.classList.add('show');
+      vguide.style.height = '0%';
+      vguide.style.opacity = '0';
+      setTimeout(() => bubble.classList.remove('show'), 3500);
+      return;
+    }
+
+    bubble.textContent = `من روی دامنه‌ام. به ${nearest} نزدیک‌ترم، می‌روم به ایستگاهش! 🚶‍♂️`;
+    bubble.classList.add('show');
+
+    // بعد از مکث، به ایستگاه نزدیک حرکت کن
+    setTimeout(() => {
+      const tx = xOfInteger(nearest);
+      const ty = BASE_Y - 5;
+      const tXpct = (tx / VB_W) * 100;
+      const tYpct = (ty / VB_H) * 100;
+      person.style.left = tXpct + '%';
+      person.style.top  = tYpct + '%';
+      vguide.style.height = '0%';
+      vguide.style.opacity = '0';
+      bubble.style.left = tXpct + '%';
+      bubble.style.top  = tYpct + '%';
+      bubble.textContent = `رسیدم به ایستگاه ${nearest}! 🏠`;
+    }, 1600);
+
+    setTimeout(() => bubble.classList.remove('show'), 4500);
+  }
+}
+</script>
+</body>
+  </html>
